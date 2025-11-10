@@ -36,8 +36,8 @@ ps aux --sort=-%cpu | head -10
 echo -e "\n=== Top Processes by Memory ==="
 ps aux --sort=-%mem | head -10
 
-echo -e "\n=== Recent System Logs (last 50 lines) ==="
-journalctl -n 50
+# echo -e "\n=== Recent System Logs (last 50 lines) ==="
+# journalctl -n 50
 
 echo -e "\n=== Kernel Messages ==="
 dmesg | tail -50
