@@ -1,72 +1,102 @@
 #!/bin/bash
 
+# Color codes
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Function to colorize output
+colorize() {
+    while IFS= read -r line; do
+        # Check for negative/error indicators (case-insensitive)
+        if echo "$line" | grep -iE 'not|failed|error|refused|denied|incomplete|disabled|inactive|down|unavailable|unreachable|no|false|0/|:0 |^0$|dead|stopped|exited' > /dev/null; then
+            echo -e "${RED}${line}${NC}"
+        # Check for positive/ok indicators
+        elif echo "$line" | grep -iE 'ok|active|running|enabled|up|yes|success|complete|available|connected|true|[1-9][0-9]*/' > /dev/null; then
+            echo -e "${YELLOW}${line}${NC}"
+        else
+            echo "$line"
+        fi
+    done
+}
+
+# Function to run command and display output line by line with delay and colors
+run_with_delay() {
+    local delay=${1:-1}  # Default 1 second delay
+    shift
+    "$@" | colorize | while IFS= read -r line; do
+        echo -e "$line"
+        sleep "$delay"
+    done
+}
+
 echo "=== Hardware Information ==="
-lshw
+run_with_delay 1 lshw
 
 echo -e "\n=== Open Files and Network Connections ==="
-lsof -i
+run_with_delay 1 lsof -i
 
 echo -e "\n=== Network Configuration ==="
-ip a
+run_with_delay 1 ip a
 
 echo -e "\n=== Routing Table ==="
-ip route show
+run_with_delay 1 ip route show
 
 echo -e "\n=== Network Statistics ==="
-ss -tulpn
+run_with_delay 1 ss -tulpn
 
 echo -e "\n=== Disk Usage ==="
-df -h
+run_with_delay 1 df -h
 
 echo -e "\n=== Disk I/O Statistics ==="
-iostat
+run_with_delay 1 iostat
 
 echo -e "\n=== Memory Usage ==="
-free -h
+run_with_delay 1 free -h
 
 echo -e "\n=== Memory Details ==="
-cat /proc/meminfo | head -20
+run_with_delay 1 bash -c "cat /proc/meminfo | head -20"
 
 echo -e "\n=== Process List ==="
-ps aux
+run_with_delay 1 ps aux
 
 echo -e "\n=== Top Processes by CPU ==="
-ps aux --sort=-%cpu | head -10
+run_with_delay 1 bash -c "ps aux --sort=-%cpu | head -10"
 
 echo -e "\n=== Top Processes by Memory ==="
-ps aux --sort=-%mem | head -10
+run_with_delay 1 bash -c "ps aux --sort=-%mem | head -10"
 
 # echo -e "\n=== Recent System Logs (last 50 lines) ==="
-# journalctl -n 50
+# run_with_delay 1 journalctl -n 50
 
 echo -e "\n=== Kernel Messages ==="
-dmesg | tail -50
+run_with_delay 1 bash -c "dmesg | tail -50"
 
 echo -e "\n=== PCI Devices ==="
-lspci -vv
+run_with_delay 1 lspci -vv
 
 echo -e "\n=== USB Devices ==="
-lsusb -v
+run_with_delay 1 lsusb -v
 
 echo -e "\n=== System Services ==="
-systemctl list-units --type=service --state=running
+run_with_delay 1 systemctl list-units --type=service --state=running
 
 echo -e "\n=== Failed Services ==="
-systemctl --failed
+run_with_delay 1 systemctl --failed
 
 echo -e "\n=== CPU Information ==="
-lscpu
+run_with_delay 1 lscpu
 
 echo -e "\n=== System Uptime and Load ==="
-uptime
+run_with_delay 1 uptime
 
 echo -e "\n=== Logged In Users ==="
-who
+run_with_delay 1 who
 
 echo -e "\n=== Last Logins ==="
-last -n 10
+run_with_delay 1 bash -c "last -n 10"
 
 echo -e "\n=== Kernel Version ==="
-uname -a
+run_with_delay 1 uname -a
 
 echo -e "\n=== System Information Complete ==="
